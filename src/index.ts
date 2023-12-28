@@ -1,6 +1,7 @@
-import bcrypt from 'bcryptjs'
+import bcrypt from "bcryptjs";
+import { response } from "express";
 import jwt from "jsonwebtoken";
-import mongoose , { Model }  from 'mongoose';
+import mongoose, { Model } from "mongoose";
 
 interface User {
   name: string;
@@ -12,24 +13,48 @@ interface LoginData {
   password: string;
 }
 
-
-//create user module for signup 
-export const createUser = async (user: User , UserSchema: Model<User>) => {
-  // Hash password
- const password = await bcrypt.hash(user.password, 10);
-
-  const userData = new UserSchema({
-    name: user.name,
-    email: user.email,
-    password: password,
-  });
-
-  await userData.save();
-
-  return user;
+//create user module for start the process on mentioned por
+export const start = async (MONGODB_URI: string) => {
+  try {
+    await mongoose.connect(MONGODB_URI as string );
+    console.log("Connected to MongoDB");
+  } catch (error) {
+    ``;
+    console.error("Error connecting to MongoDB:", error);
+    throw error;
+  }
 };
-//create user module for login 
-export const loginUser = async (loginData:LoginData , UserSchema: Model<User>) => {
+
+export const createUser = async (user: User, UserSchema: Model<User>) => {
+  try {
+    // Hash password
+    const password = await bcrypt.hash(user.password, 10);
+
+    // Create new user document
+    const userData = new UserSchema({
+      name: user.name,
+      email: user.email,
+      password: password,
+    });
+
+    // console.log(userData);
+    // Save user to database (using either save() or create())
+   const newUser =  await userData.save()
+
+    return newUser;
+
+  } catch (error) {
+    // Handle errors gracefully
+    console.error('Error creating user:', error);
+    throw new Error(`Failed to create user: ${error}`);
+  }
+};
+
+//create user module for login
+export const loginUser = async (
+  loginData: LoginData,
+  UserSchema: Model<User>
+) => {
   // Fetch user from database
   const user = await UserSchema.findOne({ email: loginData.email });
 
@@ -46,17 +71,4 @@ export const loginUser = async (loginData:LoginData , UserSchema: Model<User>) =
 
   return token;
 };
-//create user module for start the process on mentioned por
-export const start = async ( MONGODB_URI : string) => {  
-
-  try {
-    await mongoose.connect(MONGODB_URI as string);
-    console.log("Connected to MongoDB");
-  } catch (error) {
-    ``;
-    console.error("Error connecting to MongoDB:", error);
-    throw error;
-  }
-};
-
 

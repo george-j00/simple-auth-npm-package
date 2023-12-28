@@ -1,79 +1,69 @@
 "use strict";
-var __create = Object.create;
-var __defProp = Object.defineProperty;
-var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
-var __getOwnPropNames = Object.getOwnPropertyNames;
-var __getProtoOf = Object.getPrototypeOf;
-var __hasOwnProp = Object.prototype.hasOwnProperty;
-var __export = (target, all) => {
-  for (var name in all)
-    __defProp(target, name, { get: all[name], enumerable: true });
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
 };
-var __copyProps = (to, from, except, desc) => {
-  if (from && typeof from === "object" || typeof from === "function") {
-    for (let key of __getOwnPropNames(from))
-      if (!__hasOwnProp.call(to, key) && key !== except)
-        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
-  }
-  return to;
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
-  // If the importer is in node compatibility mode or this is not an ESM
-  // file that has been converted to a CommonJS file using a Babel-
-  // compatible transform (i.e. "__esModule" has not been set), then set
-  // "default" to the CommonJS "module.exports" for node compatibility.
-  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
-  mod
-));
-var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
-
-// src/index.ts
-var src_exports = {};
-__export(src_exports, {
-  createUser: () => createUser,
-  loginUser: () => loginUser,
-  start: () => start
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.loginUser = exports.createUser = exports.start = void 0;
+const bcryptjs_1 = __importDefault(require("bcryptjs"));
+const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
+const mongoose_1 = __importDefault(require("mongoose"));
+//create user module for start the process on mentioned por
+const start = (MONGODB_URI) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        yield mongoose_1.default.connect(MONGODB_URI);
+        console.log("Connected to MongoDB");
+    }
+    catch (error) {
+        ``;
+        console.error("Error connecting to MongoDB:", error);
+        throw error;
+    }
 });
-module.exports = __toCommonJS(src_exports);
-var import_bcryptjs = __toESM(require("bcryptjs"));
-var import_jsonwebtoken = __toESM(require("jsonwebtoken"));
-var import_mongoose = __toESM(require("mongoose"));
-var createUser = async (user, UserSchema) => {
-  const password = await import_bcryptjs.default.hash(user.password, 10);
-  const userData = new UserSchema({
-    name: user.name,
-    email: user.email,
-    password
-  });
-  await userData.save();
-  return user;
-};
-var loginUser = async (loginData, UserSchema) => {
-  const user = await UserSchema.findOne({ email: loginData.email });
-  if (!user || !await import_bcryptjs.default.compare(loginData.password, user.password)) {
-    throw new Error("Invalid credentials");
-  }
-  const payload = {
-    email: user.email
-  };
-  const secretKey = "your_secret_key";
-  const token = import_jsonwebtoken.default.sign(payload, secretKey, { expiresIn: "1h" });
-  return token;
-};
-var start = async (MONGODB_URI) => {
-  try {
-    await import_mongoose.default.connect(MONGODB_URI);
-    console.log("Connected to MongoDB");
-  } catch (error) {
-    ``;
-    console.error("Error connecting to MongoDB:", error);
-    throw error;
-  }
-};
-// Annotate the CommonJS export names for ESM import in node:
-0 && (module.exports = {
-  createUser,
-  loginUser,
-  start
+exports.start = start;
+const createUser = (user, UserSchema) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        // Hash password
+        const password = yield bcryptjs_1.default.hash(user.password, 10);
+        // Create new user document
+        const userData = new UserSchema({
+            name: user.name,
+            email: user.email,
+            password: password,
+        });
+        // console.log(userData);
+        // Save user to database (using either save() or create())
+        const newUser = yield userData.save();
+        return newUser;
+    }
+    catch (error) {
+        // Handle errors gracefully
+        console.error('Error creating user:', error);
+        throw new Error(`Failed to create user: ${error}`);
+    }
 });
-//# sourceMappingURL=index.js.map
+exports.createUser = createUser;
+//create user module for login
+const loginUser = (loginData, UserSchema) => __awaiter(void 0, void 0, void 0, function* () {
+    // Fetch user from database
+    const user = yield UserSchema.findOne({ email: loginData.email });
+    // Compare passwords
+    if (!user || !(yield bcryptjs_1.default.compare(loginData.password, user.password))) {
+        throw new Error("Invalid credentials");
+    }
+    const payload = {
+        email: user.email,
+    };
+    const secretKey = "your_secret_key"; // Replace with your actual secret key
+    const token = jsonwebtoken_1.default.sign(payload, secretKey, { expiresIn: "1h" }); // Set token expiration
+    return token;
+});
+exports.loginUser = loginUser;
