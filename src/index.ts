@@ -1,7 +1,7 @@
 import bcrypt from "bcryptjs";
-import { response } from "express";
 import jwt from "jsonwebtoken";
 import mongoose, { Model } from "mongoose";
+import { UserModel } from "./model/user.shema";
 
 interface User {
   name: string;
@@ -12,11 +12,14 @@ interface LoginData {
   email: string;
   password: string;
 }
+// interface UserModel {
+//   new(data: User): any;
+//   save(): Promise<any>;
+// }
 
-//create user module for start the process on mentioned por
 export const start = async (MONGODB_URI: string) => {
   try {
-    await mongoose.connect(MONGODB_URI as string );
+    await mongoose.connect(MONGODB_URI as string);
     console.log("Connected to MongoDB");
   } catch (error) {
     ``;
@@ -24,28 +27,33 @@ export const start = async (MONGODB_URI: string) => {
     throw error;
   }
 };
-
-export const createUser = async (user: User, UserSchema: Model<User>) => {
+// when doing dependency injection gettin timeout error . 
+export const createUser = async (user: User) => {
   try {
     // Hash password
     const password = await bcrypt.hash(user.password, 10);
 
-    // Create new user document
-    const userData = new UserSchema({
-      name: user.name,
-      email: user.email,
-      password: password,
-    });
+    // Check for existing user with the same email
+    const existingUser = await UserModel.findOne({ email: user.email });
 
-    // console.log(userData);
-    // Save user to database (using either save() or create())
-   const newUser =  await userData.save()
+    if (existingUser) {
+      // Handle existing user (e.g., throw an error or return a message)
+      throw new Error('User with that email already exists');
+    } else {
+      // Create the new user
+      const userData = new UserModel({
+        name: user.name,
+        email: user.email,
+        password: password,
+      });
+      const newUser = await userData.save();
 
-    return newUser;
-
+      console.log("Successfully added user");
+      return newUser;
+    }
   } catch (error) {
     // Handle errors gracefully
-    console.error('Error creating user:', error);
+    console.error("Error creating user:", error);
     throw new Error(`Failed to create user: ${error}`);
   }
 };
@@ -53,10 +61,10 @@ export const createUser = async (user: User, UserSchema: Model<User>) => {
 //create user module for login
 export const loginUser = async (
   loginData: LoginData,
-  UserSchema: Model<User>
+  // UserSchema: Model<User>
 ) => {
   // Fetch user from database
-  const user = await UserSchema.findOne({ email: loginData.email });
+  const user = await UserModel.findOne({ email: loginData.email });
 
   // Compare passwords
   if (!user || !(await bcrypt.compare(loginData.password, user.password))) {
@@ -71,4 +79,3 @@ export const loginUser = async (
 
   return token;
 };
-

@@ -16,7 +16,11 @@ exports.loginUser = exports.createUser = exports.start = void 0;
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const mongoose_1 = __importDefault(require("mongoose"));
-//create user module for start the process on mentioned por
+const user_shema_1 = require("./model/user.shema");
+// interface UserModel {
+//   new(data: User): any;
+//   save(): Promise<any>;
+// }
 const start = (MONGODB_URI) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         yield mongoose_1.default.connect(MONGODB_URI);
@@ -29,32 +33,40 @@ const start = (MONGODB_URI) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.start = start;
-const createUser = (user, UserSchema) => __awaiter(void 0, void 0, void 0, function* () {
+// when doing dependency injection gettin timeout error . 
+const createUser = (user) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         // Hash password
         const password = yield bcryptjs_1.default.hash(user.password, 10);
-        // Create new user document
-        const userData = new UserSchema({
-            name: user.name,
-            email: user.email,
-            password: password,
-        });
-        // console.log(userData);
-        // Save user to database (using either save() or create())
-        const newUser = yield userData.save();
-        return newUser;
+        // Check for existing user with the same email
+        const existingUser = yield user_shema_1.UserModel.findOne({ email: user.email });
+        if (existingUser) {
+            // Handle existing user (e.g., throw an error or return a message)
+            throw new Error('User with that email already exists');
+        }
+        else {
+            // Create the new user
+            const userData = new user_shema_1.UserModel({
+                name: user.name,
+                email: user.email,
+                password: password,
+            });
+            const newUser = yield userData.save();
+            console.log("Successfully added user");
+            return newUser;
+        }
     }
     catch (error) {
         // Handle errors gracefully
-        console.error('Error creating user:', error);
+        console.error("Error creating user:", error);
         throw new Error(`Failed to create user: ${error}`);
     }
 });
 exports.createUser = createUser;
 //create user module for login
-const loginUser = (loginData, UserSchema) => __awaiter(void 0, void 0, void 0, function* () {
+const loginUser = (loginData) => __awaiter(void 0, void 0, void 0, function* () {
     // Fetch user from database
-    const user = yield UserSchema.findOne({ email: loginData.email });
+    const user = yield user_shema_1.UserModel.findOne({ email: loginData.email });
     // Compare passwords
     if (!user || !(yield bcryptjs_1.default.compare(loginData.password, user.password))) {
         throw new Error("Invalid credentials");
