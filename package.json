@@ -1,5 +1,5 @@
 {
-  "name": "simple-auth",
+  "name": "simple-auth-connection",
   "version": "1.0.0",
   "description": "An npm package that provides simple authentication such as login , signup  and database connection using mongoose ",
   "main": "index.js",
