@@ -83,7 +83,7 @@ Logs in the user. Provide login data with email and password. Return jwt token .
 
 The package uses bcryptjs to encrypt user passwords, ensuring secure storage.
 
-Login and JWT Tokens:
+## Login and JWT Tokens:
     Upon successful login using loginUser, a JSON Web Token (JWT) is generated and returned.
 
     Example of Using JWT Token in Authenticated Requests
