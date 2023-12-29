@@ -27,7 +27,9 @@ import { start, createUser, loginUser } from 'simple-auth-connection';
 
 Provide MongoDB URI to start the connection
 
-```await start('YOUR_MONGODB_URI');```
+```js
+await start('YOUR_MONGODB_URI');
+```
 
 ## 3. User Signup
 
@@ -49,18 +51,19 @@ try {
 ## 4. User Login
 
 ```js
-        const loginData = {
-            email: 'john@example.com',
-            password: 'securepassword',
-        };
+const loginData = {
+  email: 'john@example.com',
+  password: 'securepassword',
+};
 
-        try {
-            const token = await loginUser(loginData);
-            console.log('Login successful. Token:', token);
-        } catch (error) {
-            console.error('Invalid credentials:', error);
-        }
+try {
+  const token = await loginUser(loginData);
+  console.log('Login successful. Token:', token);
+} catch (error) {
+  console.error('Invalid credentials:', error);
+}
 ```
+
 ### JWT Token :
 
 Upon successful login using loginUser, a JWT token is returned.
@@ -83,24 +86,24 @@ Logs in the user. Provide login data with email and password. Return jwt token .
 
 The package uses bcryptjs to encrypt user passwords, ensuring secure storage.
 
-## Login and JWT Tokens:
-    Upon successful login using loginUser, a JSON Web Token (JWT) is generated and returned.
+### Login and JWT Tokens:
+Upon successful login using loginUser, a JSON Web Token (JWT) is generated and returned.
 
-    Example of Using JWT Token in Authenticated Requests
+Example of Using JWT Token in Authenticated Requests
 
-                ```js
-                 const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'; // Replace with the actual token
+```js
+const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'; // Replace with the actual token
 
-                // Include the token in the Authorization header
-                fetch('your_authenticated_endpoint', {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                },
-                })
-                .then(response => response.json())
-                .then(data => console.log(data))
-                .catch(error => console.error('Error:', error));
+// Include the token in the Authorization header
+fetch('your_authenticated_endpoint', {
+  method: 'GET',
+  headers: {
+    'Authorization': `Bearer ${token}`
+  },
+})
+  .then(response => response.json())
+  .then(data => console.log(data))
+  .catch(error => console.error('Error:', error));
 ```
 
 # Additional Notes 
@@ -121,3 +124,8 @@ Submit a pull request.
 # License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
+
+
+## Author
+
+- **[George Jose](https://github.com/george-j00)** - Full stack Developer
